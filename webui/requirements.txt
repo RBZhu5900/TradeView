@@ -1,0 +1,19 @@
+# WebUI 依赖
+
+# Web框架
+fastapi>=0.109.0
+uvicorn[standard]>=0.27.0
+
+# 模板引擎
+jinja2>=3.1.0
+
+# ASGI服务器
+starlette>=0.35.0
+
+# 数据验证
+pydantic>=2.5.0
+
+# 数据处理（与回测共享）
+pandas>=2.0.0
+numpy>=1.24.0
+

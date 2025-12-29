@@ -1,0 +1,61 @@
+{
+  "description": "Server Trader 默认配置模板",
+  "version": "1.0",
+
+  "market_hours": {
+    "description": "市场交易时间（北京时间）",
+    "hk_stock": {
+      "name": "港股",
+      "trading_hours": "09:30-12:00, 13:00-16:00",
+      "best_query_time": "16:30",
+      "timezone": "Asia/Hong_Kong"
+    },
+    "us_stock": {
+      "name": "美股",
+      "trading_hours": "21:30-04:00 (夏令时) / 22:30-05:00 (冬令时)",
+      "best_query_time_dst": "04:30",
+      "best_query_time_std": "05:30",
+      "recommended_query_time": "06:00 (统一查询，确保已收盘)",
+      "timezone": "America/New_York"
+    }
+  },
+
+  "notification": {
+    "telegram": {
+      "enabled": true,
+      "message_template": {
+        "signal": "🔔 交易信号\n\n股票: {symbol}\n信号: {signal_type}\n价格: {price}\n时间: {timestamp}\n\n策略参数:\n{strategy_info}",
+        "error": "⚠️ 错误通知\n\n{error_message}\n时间: {timestamp}"
+      }
+    }
+  },
+
+  "strategy": {
+    "check_schedule": {
+      "description": "每日检查时间表",
+      "timezone": "Asia/Shanghai",
+      "check_times": ["06:00", "17:00"]
+    },
+    "default_params": {
+      "description": "如果股票没有单独配置，使用此默认参数",
+      "ema_fast_period": 20,
+      "ema_mid_period": 50,
+      "ema_slow_period": 200,
+      "stop_loss_percentage": 0.02
+    }
+  },
+
+  "risk_management": {
+    "max_position_size": 0.3,
+    "max_capital_usage": 0.8,
+    "min_cash_reserve": 0.1,
+    "max_daily_loss": 0.05
+  },
+
+  "logging": {
+    "log_dir": "./logs",
+    "log_file": "trader_{date}.log",
+    "max_log_files": 30,
+    "log_format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  }
+}

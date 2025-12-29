@@ -1,0 +1,33 @@
+version: "3.8"
+
+services:
+  trader:
+    build:
+      context: .
+      dockerfile: server_trader/Dockerfile
+    container_name: python-trade-service
+    env_file:
+      - ./server_trader/.env
+    restart: unless-stopped
+    volumes:
+      # 挂载配置文件目录（只读）
+      - ./configs:/app/configs:ro
+      # 挂载日志目录（读写）
+      - ./server_trader/logs:/app/logs
+    environment:
+      # 可以在这里覆盖环境变量
+      - TZ=Asia/Shanghai
+      - PYTHONUNBUFFERED=1
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    # 资源限制（可选，防止占用过多资源）
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 512M
+        reservations:
+          memory: 128M

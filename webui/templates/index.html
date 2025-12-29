@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PythonTradeView - 策略回测系统</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+    <link rel="stylesheet" href="/static/css/style.css" />
+  </head>
+  <body>
+    <!-- 背景装饰 -->
+    <div class="bg-decoration">
+      <div class="bg-grid"></div>
+      <div class="bg-glow bg-glow-1"></div>
+      <div class="bg-glow bg-glow-2"></div>
+    </div>
+
+    <!-- 头部导航 -->
+    <header class="header">
+      <div class="logo">
+        <svg
+          class="logo-icon"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M3 17L9 11L13 15L21 7"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+          <path
+            d="M17 7H21V11"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+        <span class="logo-text">PythonTradeView</span>
+      </div>
+      <nav class="nav">
+        <a href="#" class="nav-link active">回测</a>
+        <a href="#" class="nav-link">策略库</a>
+        <a href="#" class="nav-link">文档</a>
+      </nav>
+      <div class="header-actions">
+        <span class="status-badge" id="status-badge">
+          <span class="status-dot"></span>
+          就绪
+        </span>
+      </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <main class="main">
+      <!-- 左侧面板 - 配置区 -->
+      <aside class="panel panel-config">
+        <div class="panel-header">
+          <h2 class="panel-title">回测配置</h2>
+        </div>
+        <div class="panel-content">
+          <!-- 策略选择 -->
+          <div class="form-group">
+            <label class="form-label">
+              <span class="label-icon">📊</span>
+              选择策略
+            </label>
+            <select id="strategy-select" class="form-select">
+              <option value="">加载中...</option>
+            </select>
+          </div>
+
+          <!-- 已保存配置 -->
+          <div class="form-group" id="saved-configs-container">
+            <label class="form-label">
+              <span class="label-icon">💾</span>
+              已保存配置
+            </label>
+            <div class="config-select-wrapper">
+              <select id="config-select" class="form-select">
+                <option value="">使用默认参数</option>
+              </select>
+              <button id="delete-config-btn" class="btn-icon-only" title="删除配置" style="display: none;">
+                🗑️
+              </button>
+            </div>
+          </div>
+
+          <!-- 策略参数 -->
+          <div class="form-group" id="params-container" style="display: none">
+            <label class="form-label">
+              <span class="label-icon">⚙️</span>
+              策略参数
+            </label>
+            <div id="params-fields" class="params-grid"></div>
+          </div>
+
+          <!-- 股票选择 -->
+          <div class="form-group">
+            <label class="form-label">
+              <span class="label-icon">📈</span>
+              股票代码
+            </label>
+            <select id="symbol-select" class="form-select">
+              <option value="">加载中...</option>
+            </select>
+          </div>
+
+          <!-- 日期范围 -->
+          <div class="form-group">
+            <label class="form-label">
+              <span class="label-icon">📅</span>
+              回测区间
+            </label>
+            <div class="date-range">
+              <input type="date" id="start-date" class="form-input" />
+              <span class="date-separator">至</span>
+              <input type="date" id="end-date" class="form-input" />
+            </div>
+          </div>
+
+          <!-- 初始资金 -->
+          <div class="form-group">
+            <label class="form-label">
+              <span class="label-icon">💰</span>
+              初始资金
+            </label>
+            <div class="input-with-unit">
+              <input
+                type="number"
+                id="initial-capital"
+                class="form-input"
+                value="100000"
+                min="1000"
+              />
+              <span class="input-unit">USD</span>
+            </div>
+          </div>
+
+          <!-- 操作按钮组 -->
+          <div class="btn-group">
+            <button id="run-backtest" class="btn btn-primary">
+              <span class="btn-icon">▶</span>
+              运行回测
+            </button>
+            <button id="save-config-btn" class="btn btn-secondary">
+              <span class="btn-icon">💾</span>
+              保存配置
+            </button>
+          </div>
+        </div>
+      </aside>
+
+      <!-- 中央区域 - 图表和结果 -->
+      <section class="panel panel-main">
+        <!-- 指标卡片 -->
+        <div class="metrics-grid" id="metrics-grid">
+          <div class="metric-card">
+            <div class="metric-label">总收益率</div>
+            <div class="metric-value" id="metric-return">--</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">年化收益</div>
+            <div class="metric-value" id="metric-annual">--</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">最大回撤</div>
+            <div class="metric-value negative" id="metric-drawdown">--</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">夏普比率</div>
+            <div class="metric-value" id="metric-sharpe">--</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">胜率</div>
+            <div class="metric-value" id="metric-winrate">--</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">盈亏比</div>
+            <div class="metric-value" id="metric-profit-factor">--</div>
+          </div>
+        </div>
+
+        <!-- 权益曲线图表 -->
+        <div class="chart-container">
+          <div class="chart-header">
+            <h3 class="chart-title">权益曲线</h3>
+            <div class="chart-legend">
+              <span class="legend-item">
+                <span
+                  class="legend-color"
+                  style="background: var(--color-primary)"
+                ></span>
+                账户权益
+              </span>
+            </div>
+          </div>
+          <div class="chart-wrapper">
+            <canvas id="equity-chart"></canvas>
+            <div class="chart-placeholder" id="chart-placeholder">
+              <div class="placeholder-icon">📊</div>
+              <div class="placeholder-text">运行回测以查看权益曲线</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 右侧面板 - 交易记录 -->
+      <aside class="panel panel-trades">
+        <div class="panel-header">
+          <h2 class="panel-title">交易记录</h2>
+          <span class="trade-count" id="trade-count">0 笔</span>
+        </div>
+        <div class="panel-content">
+          <div class="trades-list" id="trades-list">
+            <div class="trades-empty">
+              <div class="empty-icon">📝</div>
+              <div class="empty-text">暂无交易记录</div>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </main>
+
+    <!-- 加载遮罩 -->
+    <div class="loading-overlay" id="loading-overlay">
+      <div class="loading-spinner"></div>
+      <div class="loading-text">回测运行中...</div>
+    </div>
+
+    <!-- Toast 通知 -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <!-- 保存配置模态框 -->
+    <div class="modal-overlay" id="save-config-modal">
+      <div class="modal">
+        <div class="modal-header">
+          <h3 class="modal-title">保存配置</h3>
+          <button class="modal-close" id="close-modal-btn">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label">配置名称</label>
+            <input type="text" id="config-name" class="form-input" placeholder="例如：AAPL 短期策略" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">描述（可选）</label>
+            <textarea id="config-description" class="form-input" rows="3" placeholder="描述这个配置的用途..."></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">
+              <input type="checkbox" id="config-bind-symbol" checked />
+              绑定当前股票
+            </label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" id="cancel-save-btn">取消</button>
+          <button class="btn btn-primary" id="confirm-save-btn">保存</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+  </body>
+</html>
